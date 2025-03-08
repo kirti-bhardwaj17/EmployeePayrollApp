@@ -1,6 +1,5 @@
 package com.bridgeLabz.employeepayrollapp.service;
 
-import com.bridgeLabz.employeepayrollapp.dto.EmployeeDTO;
 import com.bridgeLabz.employeepayrollapp.model.Employee;
 import com.bridgeLabz.employeepayrollapp.repository.EmployeeRepository;
 import com.bridgeLabz.employeepayrollapp.interfaces.EmployeeService;
@@ -8,7 +7,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
@@ -31,24 +29,17 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public Employee createEmployee(EmployeeDTO employeeDTO) {
-        // ✅ Convert DTO to Entity before saving
-        Employee employee = new Employee();
-        employee.setName(employeeDTO.getName());
-        employee.setSalary(employeeDTO.getSalary());
-        employee.setDepartment("General"); // Default department if missing
-
-        // ✅ Save employee to database
-        return employeeRepository.save(employee);
+    public Employee createEmployee(Employee employee) {
+        return employeeRepository.save(employee);  // ✅ Auto-incremented ID will be assigned by the database
     }
 
     @Override
-    public Optional<Employee> updateEmployee(Long id, EmployeeDTO updatedEmployeeDTO) {
+    public Optional<Employee> updateEmployee(Long id, Employee updatedEmployee) {
         return employeeRepository.findById(id).map(existing -> {
-            existing.setName(updatedEmployeeDTO.getName());
-            existing.setSalary(updatedEmployeeDTO.getSalary());
-            Employee updated = employeeRepository.save(existing);
-            return updated;
+            existing.setName(updatedEmployee.getName());
+            existing.setSalary(updatedEmployee.getSalary());
+            existing.setDepartment(updatedEmployee.getDepartment());
+            return employeeRepository.save(existing);
         });
     }
 
