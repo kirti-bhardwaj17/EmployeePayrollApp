@@ -1,4 +1,3 @@
-
 package com.bridgeLabz.employeepayrollapp.repository;
 
 import com.bridgeLabz.employeepayrollapp.model.Employee;

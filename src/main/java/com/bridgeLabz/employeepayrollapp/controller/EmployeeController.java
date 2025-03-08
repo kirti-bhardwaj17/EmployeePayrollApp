@@ -1,7 +1,8 @@
 package com.bridgeLabz.employeepayrollapp.controller;
 
 import com.bridgeLabz.employeepayrollapp.dto.EmployeeDTO;
-import com.bridgeLabz.employeepayrollapp.service.EmployeeService;
+import com.bridgeLabz.employeepayrollapp.model.Employee;
+import com.bridgeLabz.employeepayrollapp.interfaces.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,32 +15,37 @@ import java.util.Optional;
 public class EmployeeController {
 
     @Autowired
-    private EmployeeService employeeService;
+    private EmployeeService employeeService;  // ✅ Injecting Service, NOT Repository
 
+    // ✅ GET All Employees
     @GetMapping
-    public List<EmployeeDTO> getAllEmployees() {
+    public List<Employee> getAllEmployees() {
         return employeeService.getAllEmployees();
     }
 
+    // ✅ GET Employee by ID
     @GetMapping("/{id}")
-    public ResponseEntity<EmployeeDTO> getEmployeeById(@PathVariable Long id) {
-        Optional<EmployeeDTO> employee = employeeService.getEmployeeById(id);
+    public ResponseEntity<Employee> getEmployeeById(@PathVariable Long id) {
+        Optional<Employee> employee = employeeService.getEmployeeById(id);
         return employee.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    // ✅ POST Create Employee
     @PostMapping
-    public EmployeeDTO createEmployee(@RequestBody EmployeeDTO employeeDTO) {
-        return employeeService.createEmployee(employeeDTO);
+    public Employee createEmployee(@RequestBody EmployeeDTO employeeDTO) {
+        return employeeService.createEmployee(employeeDTO);  // ✅ Corrected
     }
 
+    // ✅ PUT Update Employee (Does NOT Update Department)
     @PutMapping("/{id}")
-    public ResponseEntity<EmployeeDTO> updateEmployee(@PathVariable Long id, @RequestBody EmployeeDTO updatedEmployeeDTO) {
-        Optional<EmployeeDTO> updatedEmployee = employeeService.updateEmployee(id, updatedEmployeeDTO);
-        return updatedEmployee.map(ResponseEntity::ok)
+    public ResponseEntity<Employee> updateEmployee(@PathVariable Long id, @RequestBody EmployeeDTO updatedEmployeeDTO) {
+        Optional<Employee> updated = employeeService.updateEmployee(id, updatedEmployeeDTO);
+        return updated.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    // ✅ DELETE Employee by ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
         if (employeeService.deleteEmployee(id)) {
