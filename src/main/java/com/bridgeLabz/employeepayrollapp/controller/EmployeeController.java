@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,46 +24,82 @@ public class EmployeeController {
     // ✅ GET All Employees
     @Operation(summary = "Get all employees", description = "Returns a list of all employees")
     @GetMapping
-    public List<Employee> getAllEmployees() {
-        return employeeService.getAllEmployees();
+    public ResponseEntity<?> getAllEmployees() {
+        try {
+            List<Employee> employees = employeeService.getAllEmployees();
+            return ResponseEntity.ok(employees);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error fetching employees: " + e.getMessage());
+        }
     }
 
     // ✅ GET Employee by ID
     @Operation(summary = "Get employee by ID", description = "Returns an employee based on the given ID")
     @GetMapping("/{id}")
-    public ResponseEntity<Employee> getEmployeeById(@PathVariable Long id) {
-        Optional<Employee> employee = employeeService.getEmployeeById(id);
-        return employee.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<?> getEmployeeById(@PathVariable Long id) {
+        try {
+            Optional<Employee> employee = employeeService.getEmployeeById(id);
+            if (employee.isPresent()) {
+                return ResponseEntity.ok(employee.get()); // ✅ Returns Employee
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Employee not found"); // ✅ Returns error message
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error retrieving employee: " + e.getMessage());
+        }
     }
 
-    // ✅ POST Create Employee (Using Model Directly)
+
+    // ✅ POST Create Employee
     @Operation(summary = "Create a new employee", description = "Adds an employee to the database")
     @PostMapping
-    public Employee createEmployee(@Valid @RequestBody Employee employee) {
-        return employeeService.createEmployee(employee);
+    public ResponseEntity<?> createEmployee(@Valid @RequestBody Employee employee) {
+        try {
+            Employee savedEmployee = employeeService.createEmployee(employee);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedEmployee);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error creating employee: " + e.getMessage());
+        }
     }
 
-    // ✅ PUT Update Employee (Using Model Directly)
-    @Operation(summary = "Update employee details", description = "Updates employee name, salary & department by ID")
+    // ✅ PUT Update Employee
+    @Operation(summary = "Update employee details", description = "Updates employee name & salary by ID")
     @PutMapping("/{id}")
-    public ResponseEntity<Employee> updateEmployee(
+    public ResponseEntity<?> updateEmployee(
             @PathVariable Long id,
             @Valid @RequestBody Employee updatedEmployee) {
-
-        Optional<Employee> updated = employeeService.updateEmployee(id, updatedEmployee);
-        return updated.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        try {
+            Optional<Employee> updated = employeeService.updateEmployee(id, updatedEmployee);
+            if (updated.isPresent()) {
+                return ResponseEntity.ok(updated.get()); // ✅ Returns Employee
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Employee not found"); // ✅ Returns error message
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error updating employee: " + e.getMessage());
+        }
     }
 
     // ✅ DELETE Employee by ID
     @Operation(summary = "Delete an employee", description = "Removes an employee from the database by ID")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
-        if (employeeService.deleteEmployee(id)) {
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
+    public ResponseEntity<?> deleteEmployee(@PathVariable Long id) {
+        try {
+            if (employeeService.deleteEmployee(id)) {
+                return ResponseEntity.ok("Employee deleted successfully");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Employee not found");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error deleting employee: " + e.getMessage());
         }
     }
 }
